@@ -1,0 +1,165 @@
+{
+  "id": "/",
+  "apps": [
+    {
+      "id": "/app",
+      "cpus": 0.01,
+      "mem": 32.0,
+      "instances": 1,
+      "dependencies": [
+        "/redis-sentinel"
+      ],
+      "container": {
+        "type": "DOCKER",
+        "docker": {
+          "image": "some-image",
+          "network": "BRIDGE"
+        }
+      },
+      "healthChecks": [
+        {
+          "path": "/",
+          "portIndex": 0,
+          "protocol": "HTTP",
+          "gracePeriodSeconds": 30,
+          "intervalSeconds": 10,
+          "timeoutSeconds": 3,
+          "maxConsecutiveFailures": 3,
+          "minimumHealthCapacity": 1
+        }
+      ]
+    },
+    {
+      "id": "/redis-master",
+      "cpus": 0.01,
+      "mem": 256.0,
+      "instances": 1,
+      "labels": {
+        "MARATHON_SINGLE_INSTANCE_APP": "true"
+      },
+      "container": {
+        "type": "DOCKER",
+        "docker": {
+          "image": "redis:3.2.5-alpine",
+          "network": "BRIDGE",
+          "portMappings": [
+            {
+              "containerPort": 6379,
+              "hostPort": 31111
+            }
+          ]
+        },
+        "volumes": [
+          {
+            "containerPath": "/data",
+            "hostPath": "/some/path/",
+            "mode": "RW"
+          }
+        ]
+      },
+       "upgradeStrategy": {
+        "minimumHealthCapacity": 0,
+        "maximumOverCapacity": 0
+      },
+      "constraints": [
+        [
+          "hostname",
+          "CLUSTER",
+          "node.for.redis.master.com"
+        ]
+      ],
+      "healthChecks": [
+        {
+          "portIndex": 0,
+          "protocol": "TCP",
+          "gracePeriodSeconds": 300,
+          "intervalSeconds": 60,
+          "timeoutSeconds": 20,
+          "maxConsecutiveFailures": 1
+        }
+      ]
+    },
+    {
+      "id": "/redis-slave",
+      "cpus": 0.01,
+      "mem": 256.0,
+      "instances": 2,
+      "dependencies": [
+        "/redis-master"
+      ],
+      "container": {
+        "type": "DOCKER",
+        "docker": {
+          "image": "/path/to/docker/images/redis-slave",
+          "network": "BRIDGE",
+          "portMappings": [
+            {
+              "containerPort": 6379,
+              "hostPort": 0,
+              "servicePort": 6379
+            }
+          ]
+        },
+        "volumes": [
+          {
+            "containerPath": "/data",
+            "hostPath": "/some/path/",
+            "mode": "RW"
+          }
+        ]
+      },
+      "env": {
+        "MASTER_HOST": "node.for.redis.master.com",
+        "MASTER_PORT": "31111"
+      },
+      "healthChecks": [
+        {
+          "portIndex": 0,
+          "protocol": "TCP",
+          "gracePeriodSeconds": 300,
+          "intervalSeconds": 60,
+          "timeoutSeconds": 20,
+          "maxConsecutiveFailures": 1
+        }
+      ]
+    },
+    {
+      "id": "/redis-sentinel",
+      "cpus": 0.01,
+      "mem": 32.0,
+      "instances": 3,
+      "dependencies": [
+        "/redis-master",
+        "/redis-slave"
+      ],
+      "container": {
+        "type": "DOCKER",
+        "docker": {
+          "image": "/path/to/docker/images/redis-sentinel",
+          "network": "BRIDGE",
+          "portMappings": [
+            {
+              "containerPort": 26379,
+              "hostPort": 0,
+              "servicePort": 26379
+            }
+          ]
+        }
+      },
+      "env": {
+        "MASTER_HOST": "node.for.redis.master.com",
+        "MASTER_PORT": "31111"
+      },
+      "healthChecks": [
+        {
+          "portIndex": 0,
+          "protocol": "TCP",
+          "gracePeriodSeconds": 300,
+          "intervalSeconds": 60,
+          "timeoutSeconds": 20,
+          "maxConsecutiveFailures": 1
+        }
+      ]
+    }
+  ]
+}
