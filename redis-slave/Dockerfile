@@ -1,8 +1,5 @@
 FROM redis:3.2.5-alpine
 
-ENV MASTER_PORT 6379
-ENV PORT0 6379
-
 RUN mkdir -p /redis
 
 WORKDIR /redis
