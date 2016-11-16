@@ -1,3 +1,3 @@
-# Redis-Sentinel-Docker-Mesos-Marathon
+# Redis-Sentinel-Docker-Marathon
 
-An example setup for using Redis Sentinel with Docker, Apache Mesos and Marathon
+An example setup for using Redis Sentinel with Docker and Marathon
