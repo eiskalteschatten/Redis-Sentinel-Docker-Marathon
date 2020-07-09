@@ -1,4 +1,4 @@
-FROM redis:3.2.5-alpine
+FROM redis:6-alpine
 
 RUN mkdir -p /redis
 

@@ -40,7 +40,7 @@
       "container": {
         "type": "DOCKER",
         "docker": {
-          "image": "redis:3.2.5-alpine",
+          "image": "redis:6-alpine",
           "network": "BRIDGE",
           "portMappings": [
             {
